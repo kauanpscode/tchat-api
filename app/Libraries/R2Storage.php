@@ -30,7 +30,7 @@ class R2Storage
 
     public function upload($file, string $folder = 'uploads'): array
     {
-        $key = $folder . '/' . uniqid() . '_' . $file->getClientName();
+        $key = $folder . '/' . $file->getRandomName();
 
         $this->client->putObject([
             'Bucket' => $this->bucket,

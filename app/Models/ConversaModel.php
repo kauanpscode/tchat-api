@@ -18,4 +18,17 @@ class ConversaModel extends Model
 
         return $row ?: null;
     }
+
+    /**
+     * Atualiza a foto de perfil (avatar)
+     */
+    public function updateAvatar(int $userId, string $avatarUrl): bool
+    {
+        $sql = "UPDATE users 
+                SET avatar_url = ?, updated_at = NOW() 
+                WHERE id = ?";
+
+        $this->db->query($sql, [$avatarUrl, $userId]);
+        return $this->db->affectedRows() > 0;
+    }
 }

@@ -10,11 +10,11 @@ use Firebase\JWT\JWT;
 class AuthController extends BaseController
 {
     use ResponseTrait;
+    protected UserModel $userModel;
 
     public function __construct()
     {
-        // Instancia a UserModel na propriedade $this->model
-        $this->model = model(UserModel::class);
+        $this->userModel   = model(UserModel::class);
     }
 
     /**
@@ -48,7 +48,7 @@ class AuthController extends BaseController
             return $this->failValidationErrors($this->validator->getErrors());
         }
 
-        $userId = $this->model->createRaw([
+        $userId = $this->userModel->createUser([
             'name' => $this->request->getVar('name'),
             'phone' => $this->request->getVar('phone'),
             'password' => $this->request->getVar('password'),
@@ -86,7 +86,7 @@ class AuthController extends BaseController
         $phone = $this->request->getVar('phone');
         $password = $this->request->getVar('password');
 
-        $user = $this->model->findByPhone($phone);
+        $user = $this->userModel->findByPhone($phone);
 
         if (!$user || !password_verify($password, $user['password'])) {
             return $this->failUnauthorized('Telefone ou senha inválidos.');
@@ -134,7 +134,7 @@ class AuthController extends BaseController
             return $this->failUnauthorized('Usuário não autenticado.');
         }
 
-        $user = $this->model->findById((int) $loggedUser->id);
+        $user = $this->userModel->findById((int) $loggedUser->id);
 
         if (!$user) {
             return $this->failNotFound('Usuário não encontrado.');

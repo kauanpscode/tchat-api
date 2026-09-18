@@ -11,5 +11,6 @@ $routes->group('api', function ($routes) {
 
     $routes->group('', ['filter' => 'authFilter'], function ($routes) {
         $routes->get('me', 'Api\AuthController::me');
+        $routes->post('me/avatar', 'Api\ConversaController::updateAvatar');
     });
 });

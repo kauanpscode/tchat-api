@@ -40,10 +40,7 @@ class UserModel extends Model
         return $row ?: null;
     }
 
-    /**
-     * Insere um novo usuário e retorna o ID gerado (via RETURNING id do PostgreSQL)
-     */
-    public function createRaw(array $data): int
+    public function createUser(array $data): int
     {
         $data['phone'] = onlyNumbers($data['phone']);
 
@@ -75,18 +72,5 @@ class UserModel extends Model
         $query = $this->db->query($sql, [$phone]);
         
         return $query->getNumRows() > 0;
-    }
-
-    /**
-     * Atualiza a foto de perfil (avatar)
-     */
-    public function updateAvatar(int $userId, string $avatarUrl): bool
-    {
-        $sql = "UPDATE users 
-                SET avatar_url = ?, updated_at = NOW() 
-                WHERE id = ?";
-
-        $this->db->query($sql, [$avatarUrl, $userId]);
-        return $this->db->affectedRows() > 0;
     }
 }
