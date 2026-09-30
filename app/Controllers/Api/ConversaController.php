@@ -4,22 +4,27 @@ namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
 use App\Models\ConversaModel;
+use App\Models\UserModel;
 use CodeIgniter\API\ResponseTrait;
-use App\Libraries\R2Storage;
 
 class ConversaController extends BaseController
 {
-    protected R2Storage $storage;
-
     use ResponseTrait;
 
+    protected ConversaModel $conversaModel;
+    protected UserModel $userModel;
 
     public function __construct()
     {
-        $this->model = model(ConversaModel::class);
-        $this->storage     = new R2Storage();
+        $this->conversaModel = model(ConversaModel::class);
+        $this->userModel = model(UserModel::class);
     }
-    public function getConversas()
+
+    /**
+     * GET /api/conversas
+     * Retorna a lista de chats do usuário logado.
+     */
+    public function index()
     {
         $loggedUser = $this->request->user ?? null;
 
@@ -27,19 +32,19 @@ class ConversaController extends BaseController
             return $this->failUnauthorized('Usuário não autenticado.');
         }
 
-        $user = $this->model->findById((int) $loggedUser->id);
-
-        if (!$user) {
-            return $this->failNotFound('Usuário não encontrado.');
-        }
+        $conversas = $this->conversaModel->getUserConversas((int) $loggedUser->id);
 
         return $this->respond([
             'status' => 200,
-            'data' => $user,
+            'data' => $conversas,
         ]);
     }
 
-    public function updateAvatar()
+    /**
+     * POST /api/conversas/privada
+     * Inicia ou retorna um chat 1-a-1 com outro usuário.
+     */
+    public function criarPrivada()
     {
         $loggedUser = $this->request->user ?? null;
 
@@ -47,26 +52,30 @@ class ConversaController extends BaseController
             return $this->failUnauthorized('Usuário não autenticado.');
         }
 
-        $rules = [
-            'avatar' => 'uploaded[avatar]|is_image[avatar]|max_size[avatar,2048]|mime_in[avatar,image/jpg,image/jpeg,image/png,image/webp]',
-        ];
+        $targetUserId = $this->request->getVar('target_user_id');
 
-        if (!$this->validate($rules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
+        if (!$targetUserId) {
+            return $this->failValidationErrors('O ID do usuário de destino é obrigatório.');
         }
 
-        $file = $this->request->getFile('avatar');
+        // Verifica se o usuário destino existe
+        $targetUser = $this->userModel->findById((int) $targetUserId);
+        if (!$targetUser) {
+            return $this->failNotFound('Usuário de destino não encontrado.');
+        }
 
-        $upload = $this->storage->upload($file, 'avatars');
+        if ($loggedUser->id == $targetUserId) {
+            return $this->failValidationErrors('Você não pode criar uma conversa consigo mesmo.');
+        }
 
-        $this->model->updateAvatar((int) $loggedUser->id, $upload['url']);
+        $conversaId = $this->conversaModel->getOrCreatePrivada((int) $loggedUser->id, (int) $targetUserId);
 
         return $this->respond([
             'status' => 200,
-            'message' => 'Foto de perfil atualizada com sucesso!',
+            'message' => 'Conversa pronta.',
             'data' => [
-                'avatar_url' => $upload['url'],
-            ],
+                'conversa_id' => $conversaId
+            ]
         ]);
     }
 }

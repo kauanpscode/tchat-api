@@ -1,70 +1,84 @@
-# CodeIgniter 4 Application Starter
+# 📱 Tchat API - Backend (WhatsApp Clone)
 
-## What is CodeIgniter?
+Bem-vindo ao repositório do **Tchat API**, uma RESTful API construída com [CodeIgniter 4](https://codeigniter.com/) e PostgreSQL. Esta API foi desenvolvida para servir de backend para um aplicativo móvel estilo WhatsApp, suportando envio de mensagens, criação de conversas, autenticação via JWT e integração com webhooks de Push Notifications.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+---
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## 🚀 Tecnologias Utilizadas
+- **PHP 8.2+**
+- **CodeIgniter 4** (Framework PHP)
+- **PostgreSQL** (Banco de Dados Relacional)
+- **JWT (Firebase/php-jwt)** (Autenticação)
+- **Composer** (Gerenciador de Dependências)
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+---
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+## ⚙️ Pré-requisitos
+Antes de começar, verifique se você possui os seguintes itens instalados em sua máquina:
+- [PHP 8.2+](https://windows.php.net/download/) (Certifique-se de que as extensões `intl`, `mbstring` e `pdo_pgsql` estão ativadas no seu `php.ini`)
+- [Composer](https://getcomposer.org/)
+- [PostgreSQL](https://www.postgresql.org/download/)
 
-## Installation & updates
+---
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+## 🛠️ Como Instalar e Rodar Localmente
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+Siga os passos abaixo para configurar o ambiente e rodar o projeto no seu computador:
 
-## Setup
+### 1. Clonar o Repositório
+Se ainda não clonou o repositório, faça isso:
+```bash
+git clone https://github.com/seu-usuario/tchat-api.git
+cd tchat-api
+```
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+### 2. Instalar as Dependências
+Execute o comando abaixo na raiz do projeto para baixar os pacotes necessários pelo Composer:
+```bash
+composer install
+```
 
-## Important Change with index.php
+### 3. Configurar o Banco de Dados (PostgreSQL)
+1. Abra seu gerenciador do PostgreSQL (pgAdmin, DBeaver, ou psql) e **crie um banco de dados vazio** (ex: `tchat_db`).
+2. Na raiz do projeto, existe um arquivo chamado `database.sql`. Execute todo o conteúdo desse script SQL dentro do banco de dados que você acabou de criar. Ele irá gerar todas as tabelas necessárias (`users`, `tchat_conversa`, `tchat_mensagem`, etc.).
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+### 4. Configurar as Variáveis de Ambiente (.env)
+1. Na raiz do projeto, você notará um arquivo chamado `.env`. (Se não houver, copie o arquivo `env` original com o nome `.env`).
+2. Abra o `.env` e ajuste as seguintes linhas para conectar ao seu banco:
+```ini
+database.default.hostname = localhost
+database.default.database = tchat_db
+database.default.username = postgres
+database.default.password = sua_senha_do_postgres
+database.default.DBDriver = Postgre
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+# Adicione também sua chave secreta para os Tokens JWT
+JWT_SECRET_KEY = 'coloque_uma_chave_bem_segura_aqui_para_o_jwt'
+JWT_TIME_TO_LIVE = 604800 # 7 dias
+```
 
-**Please** read the user guide for a better explanation of how CI4 works!
+### 5. Iniciar o Servidor Local
+Agora que tudo está configurado, inicie o servidor embutido do CodeIgniter:
+```bash
+php spark serve
+```
+A API estará rodando em: `http://localhost:8080/`
 
-## Repository Management
+---
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+## 📱 Testando a API
+Você pode usar o [Postman](https://www.postman.com/) ou [Insomnia](https://insomnia.rest/) para testar as rotas.
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+**Principais Endpoints:**
+- `POST /api/register`: Cria um novo usuário (payload: `name`, `phone`, `password`).
+- `POST /api/login`: Faz o login e retorna o Token JWT (payload: `phone`, `password`).
+- `GET /api/conversas`: Lista suas conversas *(Requer header `Authorization: Bearer <SEU_TOKEN>`)*.
+- `POST /api/conversas/privada`: Cria uma conversa com outro usuário (payload: `target_user_id`).
+- `POST /api/mensagens`: Envia uma mensagem para o chat (payload: `id_conversa`, `mensagem`).
 
-## Server Requirements
+---
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+## 🔔 Webhook de Push Notifications
+O endpoint `POST /api/push/webhook` está preparado para receber eventos ("receipts") de serviços de disparo (como o Expo Notifications). Ele analisa se algum token de dispositivo tornou-se inválido e, caso positivo, remove automaticamente do banco de dados, mantendo a tabela de push limpa.
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
-# tchat-api
+> *Projeto desenvolvido para Portfólio.*
