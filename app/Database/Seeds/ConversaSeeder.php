@@ -15,6 +15,7 @@ class ConversaSeeder extends Seeder
         $conversas = [
             [
                 'id'                   => 1,
+                'empresa_id'           => 1,
                 'tipo'                 => 'P',
                 'nome'                 => null,
                 'chave_privada'        => '1_2',
@@ -33,6 +34,7 @@ class ConversaSeeder extends Seeder
             ],
             [
                 'id'                   => 2,
+                'empresa_id'           => 1,
                 'tipo'                 => 'P',
                 'nome'                 => null,
                 'chave_privada'        => '1_3',
@@ -51,6 +53,7 @@ class ConversaSeeder extends Seeder
             ],
             [
                 'id'                   => 3,
+                'empresa_id'           => 1,
                 'tipo'                 => 'G',
                 'nome'                 => 'Projeto TChat Mobile',
                 'chave_privada'        => null,
@@ -69,18 +72,19 @@ class ConversaSeeder extends Seeder
             ],
             [
                 'id'                   => 4,
+                'empresa_id'           => 2,
                 'tipo'                 => 'G',
                 'nome'                 => 'Equipe de Suporte & Ops',
                 'chave_privada'        => null,
                 'id_grupo'             => null,
-                'id_proprietario'      => 2,
+                'id_proprietario'      => 4,
                 'ultima_mensagem_id'   => 13,
                 'ultima_atividade_em'  => $now,
                 'grupo_privado'        => false,
                 'descricao'            => 'Canal de alinhamento de infraestrutura e suporte.',
                 'regras'               => 'Avisar com antecedência sobre manutenções.',
                 'imagem'               => 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=150',
-                'criado_por'           => 2,
+                'criado_por'           => 4,
                 'criado_em'            => $now,
                 'atualizado_em'        => $now,
                 'ativo'                => true,

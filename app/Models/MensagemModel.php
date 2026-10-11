@@ -63,15 +63,26 @@ class MensagemModel extends Model
     }
 
     /**
-     * Busca o histórico de mensagens de uma conversa (com paginação simples e anexos).
+     * Busca o histórico de mensagens de uma conversa com status de leitura (tiques azuis) e paginação.
      */
-    public function getHistorico(int $conversaId, int $limit = 40, int $offset = 0): array
+    public function getHistorico(int $conversaId, int $userId, int $limit = 40, int $offset = 0): array
     {
         $sql = "SELECT m.id, m.id_usuario, m.tipo, m.mensagem, m.criado_em, m.respondendo_id,
                        u.name as usuario_nome, u.avatar_url as usuario_avatar,
                        r.mensagem as mensagem_respondida,
-                       a.caminho as anexo_url, a.nome_original as anexo_nome, a.tamanho as anexo_tamanho
+                       a.caminho as anexo_url, a.nome_original as anexo_nome, a.tamanho as anexo_tamanho,
+                       (m.id_usuario = ?) AS enviado_por_mim,
+                       CASE 
+                           WHEN m.id_usuario = ? AND c.tipo = 'P' THEN 
+                               (m.id <= COALESCE((SELECT p_other.ultima_mensagem_lida_id 
+                                                  FROM tchat_participante p_other 
+                                                  WHERE p_other.id_conversa = m.id_conversa 
+                                                    AND p_other.id_usuario != ? 
+                                                  LIMIT 1), 0))
+                           ELSE false
+                       END AS lida
                 FROM tchat_mensagem m
+                JOIN tchat_conversa c ON c.id = m.id_conversa
                 JOIN users u ON m.id_usuario = u.id
                 LEFT JOIN tchat_mensagem r ON m.respondendo_id = r.id
                 LEFT JOIN tchat_anexo a ON m.id = a.id_mensagem
@@ -79,8 +90,15 @@ class MensagemModel extends Model
                 ORDER BY m.criado_em DESC
                 LIMIT ? OFFSET ?";
         
-        $query = $this->db->query($sql, [$conversaId, $limit, $offset]);
-        return $query->getResultArray();
+        $query = $this->db->query($sql, [$userId, $userId, $userId, $conversaId, $limit, $offset]);
+        $rows = $query->getResultArray();
+
+        foreach ($rows as &$row) {
+            $row['enviado_por_mim'] = in_array($row['enviado_por_mim'], [true, 1, 't', 'true', '1'], true);
+            $row['lida']            = in_array($row['lida'], [true, 1, 't', 'true', '1'], true);
+        }
+
+        return $rows;
     }
     
     /**

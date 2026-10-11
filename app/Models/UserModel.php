@@ -40,6 +40,9 @@ class UserModel extends Model
         return $row ?: null;
     }
 
+    /**
+     * Cria um novo usuário com senha criptografada via Bcrypt
+     */
     public function createUser(array $data): int
     {
         $data['phone'] = onlyNumbers($data['phone']);
@@ -48,7 +51,6 @@ class UserModel extends Model
                 VALUES (?, ?, ?, NOW(), NOW()) 
                 RETURNING id";
 
-        // Gera o hash seguro da senha com Bcrypt
         $passwordHash = password_hash($data['password'], PASSWORD_BCRYPT);
 
         $query = $this->db->query($sql, [
@@ -72,5 +74,18 @@ class UserModel extends Model
         $query = $this->db->query($sql, [$phone]);
         
         return $query->getNumRows() > 0;
+    }
+
+    /**
+     * Atualiza a foto de perfil (avatar) do usuário
+     */
+    public function updateAvatar(int $userId, string $avatarUrl): bool
+    {
+        $sql = "UPDATE users 
+                SET avatar_url = ?, updated_at = NOW() 
+                WHERE id = ?";
+
+        $this->db->query($sql, [$avatarUrl, $userId]);
+        return $this->db->affectedRows() > 0;
     }
 }

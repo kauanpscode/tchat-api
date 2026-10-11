@@ -134,7 +134,7 @@ class ParticipanteSeeder extends Seeder
             // Conversa 4: Grupo Suporte & Ops
             [
                 'id_conversa'             => 4,
-                'id_usuario'              => 2,
+                'id_usuario'              => 4,
                 'mensagem_inicial_id'     => 0,
                 'ultima_mensagem_lida_id' => 13,
                 'entrou_em'               => $now,
